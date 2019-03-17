@@ -50,4 +50,5 @@ git add .
 git commit -m "수정내역"
 git push -f heroku master
 heroku logs -t
+heroku logs -a socket-server-node -t
 ```
