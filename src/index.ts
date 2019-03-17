@@ -25,11 +25,12 @@ const socketIo = io(server, {
 	pingTimeout: 10000, // ping 타임아웃
 	transports: [ 'websocket', 'polling' ],
 	origins: '*:*',
-	parser: msgpackParser
+	parser: msgpackParser,
 });
 
 // 포트
-const socketIoPort: number = Number(process.env.PORT) || Number(process.env.SOCKET_IO_PORT) || 5000;
+const socketIoPort: number =
+	Number(process.env.PORT) || Number(process.env.SOCKET_IO_PORT) || 5000;
 const ip: string = process.env.IP || '127.0.0.1';
 const netPort: number = Number(process.env.NET_PORT) || 5001;
 
@@ -78,7 +79,7 @@ socketIo.on('connection', (socket: any) => {
 		nickName: socket.handshake.query.nickName,
 		nickId: socket.handshake.query.nickId,
 		socketName: socket.handshake.query.socketName,
-		socketGubun: 'socket.io'
+		socketGubun: 'socket.io',
 	};
 
 	// 클라이언트가 접속했을 때 나머지 사용자에게 접속했다고 메시지 보내기
@@ -86,11 +87,10 @@ socketIo.on('connection', (socket: any) => {
 		message: clientInfo.nickName + '(이)가 접속 하였습니다.',
 		nickName: clientInfo.nickName,
 		nickId: clientInfo.nickId,
-		isSelf: false
+		isSelf: false,
 	};
 
-	//socket.broadcast.emit('client.msg.receive', JSON.stringify(connectedMsg));
-	console.log('연결됨');
+	socket.broadcast.emit('client.msg.receive', JSON.stringify(connectedMsg));
 
 	// 클라이언트 정보 PUSH
 	clientPool.push(clientInfo);
@@ -100,12 +100,14 @@ socketIo.on('connection', (socket: any) => {
 
 	// SERVER RECEIVE 이벤트 핸들러(클라이언트 -> 서버)
 	socket.on('disconnect', (context: any) => {
-		const disconnectSocket = clientPool.filter((data: clientType) => data.uniqueId === socket.id)[0];
+		const disconnectSocket = clientPool.filter(
+			(data: clientType) => data.uniqueId === socket.id
+		)[0];
 		const disconnectMsg = {
 			message: disconnectSocket.nickName + '(이)가 퇴장 하였습니다.',
 			nickName: disconnectSocket.nickName,
 			nickId: disconnectSocket.nickId,
-			isSelf: false
+			isSelf: false,
 		};
 
 		// 클라이언트가 접속을 끊었을 때 나머지 클라이언트들에게 접속 끊었다고 메시지 보내기
@@ -125,7 +127,7 @@ socketIo.on('connection', (socket: any) => {
 			data.clientSocket.write(
 				JSON.stringify({
 					action: 'client.msg.receive',
-					data: context
+					data: context,
 				}),
 				(err: any) => {}
 			);
@@ -170,14 +172,14 @@ const netServer = net.createServer((socket: any) => {
 		nickId: socket.nickId,
 		uniqueId: uuidv1(),
 		socketName: '',
-		socketGubun: 'net'
+		socketGubun: 'net',
 	};
 
 	// 클라이언트에게 uniqueId 를 전송함
 	socket.write(
 		JSON.stringify({
 			action: 'client.msg.connected',
-			data: clientInfo.uniqueId
+			data: clientInfo.uniqueId,
 		})
 	);
 
@@ -192,9 +194,11 @@ const netServer = net.createServer((socket: any) => {
 		console.log('net data:', msg);
 
 		// 브라우저쪽으로 .NET 클라이언트에서 보낸 메세지 보내기
-		clientPool.filter((data) => data.socketGubun === 'socket.io').map((data) => {
-			data.clientSocket.emit('client.msg.receive', msg);
-		});
+		clientPool
+			.filter((data) => data.socketGubun === 'socket.io')
+			.map((data) => {
+				data.clientSocket.emit('client.msg.receive', msg);
+			});
 	});
 
 	socket.on('close', () => {
