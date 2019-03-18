@@ -25,7 +25,7 @@ const socketIo = io(server, {
 	pingTimeout: 10000, // ping 타임아웃
 	transports: [ 'websocket', 'polling' ],
 	origins: '*:*',
-	parser: msgpackParser,
+	parser: msgpackParser
 });
 
 // 포트
@@ -79,18 +79,34 @@ socketIo.on('connection', (socket: any) => {
 		nickName: socket.handshake.query.nickName,
 		nickId: socket.handshake.query.nickId,
 		socketName: socket.handshake.query.socketName,
-		socketGubun: 'socket.io',
+		socketGubun: 'socket.io'
 	};
 
 	// 클라이언트가 접속했을 때 나머지 사용자에게 접속했다고 메시지 보내기
-	const connectedMsg = {
+	const connInfo = {
 		message: clientInfo.nickName + '(이)가 접속 하였습니다.',
 		nickName: clientInfo.nickName,
 		nickId: clientInfo.nickId,
 		isSelf: false,
+		uniqueId: clientInfo.uniqueId
 	};
 
-	socket.broadcast.emit('client.msg.receive', JSON.stringify(connectedMsg));
+	const currentUsers = clientPool.map((data) => {
+		const user = {
+			uniqueId: data.uniqueId,
+			nickName: data.nickName,
+			nickId: data.nickId
+		};
+
+		return user;
+	});
+
+	// 접속정보를 클라이언트 소켓들에게 emit
+	socket.broadcast.emit('client.msg.receive', JSON.stringify(connInfo));
+	socket.broadcast.emit('client.user.in', JSON.stringify(connInfo));
+
+	// 처음 접속시 현재접속한 클라이언트에게 접속자정보들을 보내줌
+	socket.emit('client.current.users', JSON.stringify(currentUsers));
 
 	// 클라이언트 정보 PUSH
 	clientPool.push(clientInfo);
@@ -103,18 +119,23 @@ socketIo.on('connection', (socket: any) => {
 		const disconnectSocket = clientPool.filter(
 			(data: clientType) => data.uniqueId === socket.id
 		)[0];
-		const disconnectMsg = {
+
+		const disconnInfo = {
 			message: disconnectSocket.nickName + '(이)가 퇴장 하였습니다.',
 			nickName: disconnectSocket.nickName,
 			nickId: disconnectSocket.nickId,
 			isSelf: false,
+			uniqueId: disconnectSocket.uniqueId
 		};
 
-		// 클라이언트가 접속을 끊었을 때 나머지 클라이언트들에게 접속 끊었다고 메시지 보내기
-		socket.broadcast.emit('client.msg.receive', JSON.stringify(disconnectMsg));
+		// 접속종료정보를 클라이언트 소켓들에게 emit
+		socket.broadcast.emit('client.msg.receive', JSON.stringify(disconnInfo));
+		socket.broadcast.emit('client.user.out', JSON.stringify(disconnInfo));
+
+		// clientPool 에서 해당 소켓 제거
 		_.remove(clientPool, (data: any) => data.uniqueId === socket.id);
 
-		console.log('client disconnected!', JSON.stringify(disconnectMsg));
+		console.log('client disconnected!', JSON.stringify(disconnInfo));
 	});
 
 	socket.on('client.msg.send', (context: any) => {
@@ -127,7 +148,7 @@ socketIo.on('connection', (socket: any) => {
 			data.clientSocket.write(
 				JSON.stringify({
 					action: 'client.msg.receive',
-					data: context,
+					data: context
 				}),
 				(err: any) => {}
 			);
@@ -172,14 +193,14 @@ const netServer = net.createServer((socket: any) => {
 		nickId: socket.nickId,
 		uniqueId: uuidv1(),
 		socketName: '',
-		socketGubun: 'net',
+		socketGubun: 'net'
 	};
 
 	// 클라이언트에게 uniqueId 를 전송함
 	socket.write(
 		JSON.stringify({
 			action: 'client.msg.connected',
-			data: clientInfo.uniqueId,
+			data: clientInfo.uniqueId
 		})
 	);
 
