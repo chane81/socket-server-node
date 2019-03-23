@@ -9,6 +9,8 @@ import net from 'net';
 import _ from 'lodash';
 import uuidv1 from 'uuid/v1';
 import io from 'socket.io';
+import * as interfaces from './interfaces';
+import models from './models';
 //const io = require('socket.io');
 const msgpackParser = require('socket.io-msgpack-parser');
 
@@ -72,44 +74,75 @@ function connectClients() {
 // 소켓통신 이벤트 핸들러
 // connection
 socketIo.on('connection', (socket: any) => {
-	// 클라이언트 정보
-	const clientInfo: clientType = {
-		clientSocket: socket,
-		uniqueId: socket.id,
+	models.userModel = {
 		nickName: socket.handshake.query.nickName,
 		nickId: socket.handshake.query.nickId,
+		isActive: socket.handshake.query.isActive,
+		uniqueId: socket.id
+	};
+
+	models.socketModel = {
+		socket,
 		socketName: socket.handshake.query.socketName,
 		socketGubun: 'socket.io'
 	};
 
+	// 사용자 POOL 에 PUSH
+	models.userPoolModel.push(models.userModel);
+
+	// 소켓 POOL 에 PUSH
+	models.socketPoolModel.push(models.socketModel);
+
+	// // 클라이언트 정보
+	// const clientInfo: clientType = {
+	// 	clientSocket: socket,
+	// 	uniqueId: socket.id,
+	// 	nickName: socket.handshake.query.nickName,
+	// 	nickId: socket.handshake.query.nickId,
+	// 	socketName: socket.handshake.query.socketName,
+	// 	socketGubun: 'socket.io'
+	// };
+
 	// 클라이언트가 접속했을 때 나머지 사용자에게 접속했다고 메시지 보내기
-	const connInfo = {
-		message: clientInfo.nickName + '(이)가 접속 하였습니다.',
-		nickName: clientInfo.nickName,
-		nickId: clientInfo.nickId,
+	// const connInfo = {
+	// 	message: clientInfo.nickName + '(이)가 접속 하였습니다.',
+	// 	nickName: clientInfo.nickName,
+	// 	nickId: clientInfo.nickId,
+	// 	isSelf: false,
+	// 	uniqueId: clientInfo.uniqueId
+	// };
+
+	// 클라이언트가 접속했을 때 나머지 사용자에게 접속했다고 메시지 보내기
+	const msgConn: interfaces.IMessageModel = {
 		isSelf: false,
-		uniqueId: clientInfo.uniqueId
+		message: models.userModel.nickName + '(이)가 접속 하였습니다.',
+		user: models.userModel
 	};
 
-	const currentUsers = clientPool.map((data) => {
-		const user = {
-			uniqueId: data.uniqueId,
-			nickName: data.nickName,
-			nickId: data.nickId
-		};
+	// const currentUsers = clientPool.map((data) => {
+	// 	const user = {
+	// 		uniqueId: data.uniqueId,
+	// 		nickName: data.nickName,
+	// 		nickId: data.nickId
+	// 	};
 
-		return user;
-	});
+	// 	return user;
+	// });
 
 	// 접속정보를 클라이언트 소켓들에게 emit
-	socket.broadcast.emit('client.msg.receive', JSON.stringify(connInfo));
-	socket.broadcast.emit('client.user.in', JSON.stringify(connInfo));
+	// socket.broadcast.emit('client.msg.receive', JSON.stringify(connInfo));
+	// socket.broadcast.emit('client.user.in', JSON.stringify(connInfo));
+
+	socket.broadcast.emit('client.msg.receive', JSON.stringify(msgConn));
+	socket.broadcast.emit('client.user.in', JSON.stringify(msgConn));
 
 	// 처음 접속시 현재접속한 클라이언트에게 접속자정보들을 보내줌
-	socket.emit('client.current.users', JSON.stringify(currentUsers));
+	//socket.emit('client.current.users', JSON.stringify(currentUsers));
+
+	socket.emit('client.current.users', JSON.stringify(models.userPoolModel));
 
 	// 클라이언트 정보 PUSH
-	clientPool.push(clientInfo);
+	//clientPool.push(clientInfo);
 
 	// 접속한 클라이언트들 보여주기
 	connectClients();
@@ -119,6 +152,10 @@ socketIo.on('connection', (socket: any) => {
 		const disconnectSocket = clientPool.filter(
 			(data: clientType) => data.uniqueId === socket.id
 		)[0];
+
+		// const msgDisConn: interfaces.IMessageModel = {
+		// 	message:
+		// };
 
 		const disconnInfo = {
 			message: disconnectSocket.nickName + '(이)가 퇴장 하였습니다.',
