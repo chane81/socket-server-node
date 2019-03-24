@@ -66,12 +66,6 @@ const userPoolModel: IUserModel[] = [];
 // 접속한 클라이언트들 로그로 보여주기
 function connectClients() {
 	console.log('접속 클라이언트들:');
-	// clientPool.map((data) => {
-	// 	const { uniqueId, nickName, nickId, socketName, socketGubun } = data;
-	// 	console.log(
-	// 		`nickName:${nickName}, nickId:${nickId}, socketGubun:${socketGubun}, uniqueId:${uniqueId}, socketName:${socketName}`
-	// 	);
-	// });
 
 	userPoolModel.map((data: IUserModel) => {
 		console.log(
