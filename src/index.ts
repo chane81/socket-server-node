@@ -10,7 +10,8 @@ import _ from 'lodash';
 import uuidv1 from 'uuid/v1';
 import io from 'socket.io';
 import msgpackParser from 'socket.io-msgpack-parser';
-import { IMessageModel, ISocketModel, IUserModel } from './interfaces';
+import { IMessageModel, IUserModel } from './interfaces';
+import { json } from 'body-parser';
 
 /* 설정 세팅 =================================================================================================*/
 
@@ -57,9 +58,6 @@ app.use(cors());
 // 접속 클라이언틑 정보
 const clientPool: clientType[] = [];
 
-/** 소켓 POOL 모델 */
-const socketPoolModel: ISocketModel[] = [];
-
 /** 유저 POOL 모델 */
 const userPoolModel: IUserModel[] = [];
 
@@ -83,34 +81,32 @@ socketIo.on('connection', (socket: any) => {
 	const userModel: IUserModel = {
 		nickName: socket.handshake.query.nickName,
 		nickId: socket.handshake.query.nickId,
-		isActive: socket.handshake.query.isActive,
 		uniqueId: socket.id
 	};
 
-	// 접속 소켓 정보
-	const socketModel: ISocketModel = {
-		socket,
-		socketName: socket.handshake.query.socketName,
-		socketGubun: 'socket.io'
-	};
+	// // 접속 소켓 정보
+	// const socketModel: ISocketModel = {
+	// 	socket: socket,
+	// 	socketName: socket.handshake.query.socketName,
+	// 	socketGubun: 'socket.io'
+	// };
 
 	// 사용자 POOL 에 PUSH
 	userPoolModel.push(userModel);
 
-	// 소켓 POOL 에 PUSH
-	socketPoolModel.push(socketModel);
-
 	// 접속 message 생성
 	const msgConnModel: IMessageModel = {
+		msgFromUniqueId: '',
+		msgToUniqueId: '',
 		isSelf: false,
 		message: userModel.nickName + '(이)가 접속 하였습니다.',
 		user: userModel
 	};
 
 	// 클라이언트가 접속했을 때 나머지 사용자에게 접속했다고 메시지 보내기
-	console.log('접속정보 SEND:', JSON.stringify(msgConnModel));
+	console.log('접속정보 SEND:', JSON.stringify(userModel));
 	socket.broadcast.emit('client.msg.receive', JSON.stringify(msgConnModel));
-	socket.broadcast.emit('client.user.in', JSON.stringify(msgConnModel));
+	socket.broadcast.emit('client.user.in', JSON.stringify(userModel));
 
 	// 클라이언트에게 현재 접속자 정보를 보냄
 	socket.emit('client.current.users', JSON.stringify(userPoolModel));
@@ -126,39 +122,54 @@ socketIo.on('connection', (socket: any) => {
 		}) as IUserModel;
 
 		const msgDisConn: IMessageModel = {
+			msgFromUniqueId: '',
+			msgToUniqueId: '',
 			message: disconUserModel.nickName + '(이)가 퇴장 하였습니다.',
 			isSelf: false,
 			user: disconUserModel
 		};
 
-		// 접속종료정보를 클라이언트 소켓들에게 emit
+		// 접속종료정보를 모든 클라이언트 소켓들에게 emit
 		socket.broadcast.emit('client.msg.receive', JSON.stringify(msgDisConn));
-		socket.broadcast.emit('client.user.out', JSON.stringify(msgDisConn));
-
-		// 소켓 pool 에서 해당 소켓 제거
-		_.remove(socketPoolModel, (data: ISocketModel) => data.socket === socket);
+		socket.broadcast.emit('client.user.out', JSON.stringify(disconUserModel));
 
 		// 사용자 pool 에서 해당 사용자객체 제거
-		_.remove(userPoolModel, (data: IUserModel) => data === disconUserModel);
+		_.remove(
+			userPoolModel,
+			(data: IUserModel) => data.uniqueId === disconUserModel.uniqueId
+		);
 
 		// log
 		console.log('client disconnected!', JSON.stringify(disconUserModel));
 	});
 
 	// 메시지 SEND
-	socket.on('client.msg.send', (context: any) => {
-		socket.broadcast.emit('client.msg.receive', context);
+	socket.on('client.msg.send', (context: string) => {
+		console.log('client.msg.send:', context);
+
+		const message: IMessageModel = JSON.parse(context);
+
+		console.log('activeID:', message);
+
+		if (message.msgToUniqueId === '') {
+			console.log('broadCast');
+			socket.broadcast.emit('client.msg.receive', context);
+		} else {
+			socketIo.to(message.msgToUniqueId).emit('client.msg.receive', context);
+		}
+
+		//console.log('sockets:', socketIo.sockets);
 
 		// .NET 클라이언트에게로 메시지 보내기
-		clientPool.filter((data) => data.socketGubun === 'net').map((data) => {
-			data.clientSocket.write(
-				JSON.stringify({
-					action: 'client.msg.receive',
-					data: context
-				}),
-				(err: any) => {}
-			);
-		});
+		// clientPool.filter((data) => data.socketGubun === 'net').map((data) => {
+		// 	data.clientSocket.write(
+		// 		JSON.stringify({
+		// 			action: 'client.msg.receive',
+		// 			data: context
+		// 		}),
+		// 		(err: any) => {}
+		// 	);
+		// });
 	});
 });
 
