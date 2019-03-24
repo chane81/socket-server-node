@@ -13,6 +13,7 @@ import msgpackParser from 'socket.io-msgpack-parser';
 import { IMessageModel, ISocketModel, IUserModel } from './interfaces';
 
 /* 설정 세팅 =================================================================================================*/
+
 dotenv.config();
 const app = new koa();
 const server = new http.Server(app.callback());
