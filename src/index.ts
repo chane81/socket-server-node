@@ -9,8 +9,7 @@ import net from 'net';
 import _ from 'lodash';
 import uuidv1 from 'uuid/v1';
 import io from 'socket.io';
-import * as interfaces from './interfaces';
-import models from './models';
+import { IMessageModel, ISocketModel, IUserModel } from './interfaces';
 //const io = require('socket.io');
 const msgpackParser = require('socket.io-msgpack-parser');
 
@@ -58,13 +57,25 @@ app.use(cors());
 // 접속 클라이언틑 정보
 const clientPool: clientType[] = [];
 
+/** 소켓 POOL 모델 */
+const socketPoolModel: ISocketModel[] = [];
+
+/** 유저 POOL 모델 */
+const userPoolModel: IUserModel[] = [];
+
 // 접속한 클라이언트들 로그로 보여주기
 function connectClients() {
 	console.log('접속 클라이언트들:');
-	clientPool.map((data) => {
-		const { uniqueId, nickName, nickId, socketName, socketGubun } = data;
+	// clientPool.map((data) => {
+	// 	const { uniqueId, nickName, nickId, socketName, socketGubun } = data;
+	// 	console.log(
+	// 		`nickName:${nickName}, nickId:${nickId}, socketGubun:${socketGubun}, uniqueId:${uniqueId}, socketName:${socketName}`
+	// 	);
+	// });
+
+	userPoolModel.map((data: IUserModel) => {
 		console.log(
-			`nickName:${nickName}, nickId:${nickId}, socketGubun:${socketGubun}, uniqueId:${uniqueId}, socketName:${socketName}`
+			`nickName:${data.nickName}, nickId:${data.nickId}, uniqueId:${data.uniqueId}`
 		);
 	});
 }
@@ -74,110 +85,74 @@ function connectClients() {
 // 소켓통신 이벤트 핸들러
 // connection
 socketIo.on('connection', (socket: any) => {
-	models.userModel = {
+	// 접속한 유저정보
+	const userModel: IUserModel = {
 		nickName: socket.handshake.query.nickName,
 		nickId: socket.handshake.query.nickId,
 		isActive: socket.handshake.query.isActive,
 		uniqueId: socket.id
 	};
 
-	models.socketModel = {
+	// 접속 소켓 정보
+	const socketModel: ISocketModel = {
 		socket,
 		socketName: socket.handshake.query.socketName,
 		socketGubun: 'socket.io'
 	};
 
 	// 사용자 POOL 에 PUSH
-	models.userPoolModel.push(models.userModel);
+	userPoolModel.push(userModel);
 
 	// 소켓 POOL 에 PUSH
-	models.socketPoolModel.push(models.socketModel);
+	socketPoolModel.push(socketModel);
 
-	// // 클라이언트 정보
-	// const clientInfo: clientType = {
-	// 	clientSocket: socket,
-	// 	uniqueId: socket.id,
-	// 	nickName: socket.handshake.query.nickName,
-	// 	nickId: socket.handshake.query.nickId,
-	// 	socketName: socket.handshake.query.socketName,
-	// 	socketGubun: 'socket.io'
-	// };
-
-	// 클라이언트가 접속했을 때 나머지 사용자에게 접속했다고 메시지 보내기
-	// const connInfo = {
-	// 	message: clientInfo.nickName + '(이)가 접속 하였습니다.',
-	// 	nickName: clientInfo.nickName,
-	// 	nickId: clientInfo.nickId,
-	// 	isSelf: false,
-	// 	uniqueId: clientInfo.uniqueId
-	// };
-
-	// 클라이언트가 접속했을 때 나머지 사용자에게 접속했다고 메시지 보내기
-	const msgConn: interfaces.IMessageModel = {
+	// 접속 message 생성
+	const msgConnModel: IMessageModel = {
 		isSelf: false,
-		message: models.userModel.nickName + '(이)가 접속 하였습니다.',
-		user: models.userModel
+		message: userModel.nickName + '(이)가 접속 하였습니다.',
+		user: userModel
 	};
 
-	// const currentUsers = clientPool.map((data) => {
-	// 	const user = {
-	// 		uniqueId: data.uniqueId,
-	// 		nickName: data.nickName,
-	// 		nickId: data.nickId
-	// 	};
+	// 클라이언트가 접속했을 때 나머지 사용자에게 접속했다고 메시지 보내기
+	console.log('접속정보 SEND:', JSON.stringify(msgConnModel));
+	socket.broadcast.emit('client.msg.receive', JSON.stringify(msgConnModel));
+	socket.broadcast.emit('client.user.in', JSON.stringify(msgConnModel));
 
-	// 	return user;
-	// });
-
-	// 접속정보를 클라이언트 소켓들에게 emit
-	// socket.broadcast.emit('client.msg.receive', JSON.stringify(connInfo));
-	// socket.broadcast.emit('client.user.in', JSON.stringify(connInfo));
-
-	socket.broadcast.emit('client.msg.receive', JSON.stringify(msgConn));
-	socket.broadcast.emit('client.user.in', JSON.stringify(msgConn));
-
-	// 처음 접속시 현재접속한 클라이언트에게 접속자정보들을 보내줌
-	//socket.emit('client.current.users', JSON.stringify(currentUsers));
-
-	socket.emit('client.current.users', JSON.stringify(models.userPoolModel));
-
-	// 클라이언트 정보 PUSH
-	//clientPool.push(clientInfo);
+	// 클라이언트에게 현재 접속자 정보를 보냄
+	socket.emit('client.current.users', JSON.stringify(userPoolModel));
 
 	// 접속한 클라이언트들 보여주기
 	connectClients();
 
 	// SERVER RECEIVE 이벤트 핸들러(클라이언트 -> 서버)
+	// 접속종료
 	socket.on('disconnect', (context: any) => {
-		const disconnectSocket = clientPool.filter(
-			(data: clientType) => data.uniqueId === socket.id
-		)[0];
+		const disconUserModel: IUserModel = _.find(userPoolModel, {
+			uniqueId: socket.id
+		}) as IUserModel;
 
-		// const msgDisConn: interfaces.IMessageModel = {
-		// 	message:
-		// };
-
-		const disconnInfo = {
-			message: disconnectSocket.nickName + '(이)가 퇴장 하였습니다.',
-			nickName: disconnectSocket.nickName,
-			nickId: disconnectSocket.nickId,
+		const msgDisConn: IMessageModel = {
+			message: disconUserModel.nickName + '(이)가 퇴장 하였습니다.',
 			isSelf: false,
-			uniqueId: disconnectSocket.uniqueId
+			user: disconUserModel
 		};
 
 		// 접속종료정보를 클라이언트 소켓들에게 emit
-		socket.broadcast.emit('client.msg.receive', JSON.stringify(disconnInfo));
-		socket.broadcast.emit('client.user.out', JSON.stringify(disconnInfo));
+		socket.broadcast.emit('client.msg.receive', JSON.stringify(msgDisConn));
+		socket.broadcast.emit('client.user.out', JSON.stringify(msgDisConn));
 
-		// clientPool 에서 해당 소켓 제거
-		_.remove(clientPool, (data: any) => data.uniqueId === socket.id);
+		// 소켓 pool 에서 해당 소켓 제거
+		_.remove(socketPoolModel, (data: ISocketModel) => data.socket === socket);
 
-		console.log('client disconnected!', JSON.stringify(disconnInfo));
+		// 사용자 pool 에서 해당 사용자객체 제거
+		_.remove(userPoolModel, (data: IUserModel) => data === disconUserModel);
+
+		// log
+		console.log('client disconnected!', JSON.stringify(disconUserModel));
 	});
 
+	// 메시지 SEND
 	socket.on('client.msg.send', (context: any) => {
-		console.log('socket.io data:', context);
-
 		socket.broadcast.emit('client.msg.receive', context);
 
 		// .NET 클라이언트에게로 메시지 보내기
