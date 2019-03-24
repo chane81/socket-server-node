@@ -1,6 +1,6 @@
 /** 사용자 모델 인터페이스 */
 interface IUserModel {
-	//isActive: boolean;
+	isRead: boolean;
 	nickId: string;
 	nickName: string;
 	uniqueId: string;
@@ -8,6 +8,7 @@ interface IUserModel {
 
 /** 소켓 메시지 모델 인터페이스 */
 interface IMessageModel {
+	isRead: boolean;
 	isSelf: boolean;
 	message: string;
 	msgFromUniqueId: string;

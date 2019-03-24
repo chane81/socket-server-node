@@ -77,35 +77,19 @@ function connectClients() {
 // 소켓통신 이벤트 핸들러
 // connection
 socketIo.on('connection', (socket: any) => {
-	// 접속한 유저정보
+	// 접속한 유저정보(접속시에는 빨간 dot(메시지 읽었는지 여부)가 안뜨게 isRead: true 로 설정)
 	const userModel: IUserModel = {
+		isRead: true,
 		nickName: socket.handshake.query.nickName,
 		nickId: socket.handshake.query.nickId,
 		uniqueId: socket.id
 	};
 
-	// // 접속 소켓 정보
-	// const socketModel: ISocketModel = {
-	// 	socket: socket,
-	// 	socketName: socket.handshake.query.socketName,
-	// 	socketGubun: 'socket.io'
-	// };
-
 	// 사용자 POOL 에 PUSH
 	userPoolModel.push(userModel);
 
-	// 접속 message 생성
-	const msgConnModel: IMessageModel = {
-		msgFromUniqueId: '',
-		msgToUniqueId: '',
-		isSelf: false,
-		message: userModel.nickName + '(이)가 접속 하였습니다.',
-		user: userModel
-	};
-
 	// 클라이언트가 접속했을 때 나머지 사용자에게 접속했다고 메시지 보내기
 	console.log('접속정보 SEND:', JSON.stringify(userModel));
-	socket.broadcast.emit('client.msg.receive', JSON.stringify(msgConnModel));
 	socket.broadcast.emit('client.user.in', JSON.stringify(userModel));
 
 	// 클라이언트에게 현재 접속자 정보를 보냄
@@ -122,6 +106,7 @@ socketIo.on('connection', (socket: any) => {
 		}) as IUserModel;
 
 		const msgDisConn: IMessageModel = {
+			isRead: false,
 			msgFromUniqueId: '',
 			msgToUniqueId: '',
 			message: disconUserModel.nickName + '(이)가 퇴장 하였습니다.',
@@ -130,8 +115,8 @@ socketIo.on('connection', (socket: any) => {
 		};
 
 		// 접속종료정보를 모든 클라이언트 소켓들에게 emit
-		socket.broadcast.emit('client.msg.receive', JSON.stringify(msgDisConn));
 		socket.broadcast.emit('client.user.out', JSON.stringify(disconUserModel));
+		//socket.broadcast.emit('client.msg.receive', JSON.stringify(msgDisConn));
 
 		// 사용자 pool 에서 해당 사용자객체 제거
 		_.remove(
@@ -148,14 +133,17 @@ socketIo.on('connection', (socket: any) => {
 		console.log('client.msg.send:', context);
 
 		const message: IMessageModel = JSON.parse(context);
-
-		console.log('activeID:', message);
+		const messageEmit: IMessageModel = {
+			...message,
+			isSelf: false
+		};
 
 		if (message.msgToUniqueId === '') {
-			console.log('broadCast');
-			socket.broadcast.emit('client.msg.receive', context);
+			socket.broadcast.emit('client.msg.receive', JSON.stringify(messageEmit));
 		} else {
-			socketIo.to(message.msgToUniqueId).emit('client.msg.receive', context);
+			socketIo
+				.to(message.msgToUniqueId)
+				.emit('client.msg.receive', JSON.stringify(messageEmit));
 		}
 
 		//console.log('sockets:', socketIo.sockets);
