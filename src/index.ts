@@ -9,9 +9,8 @@ import net from 'net';
 import _ from 'lodash';
 import uuidv1 from 'uuid/v1';
 import io from 'socket.io';
+import msgpackParser from 'socket.io-msgpack-parser';
 import { IMessageModel, ISocketModel, IUserModel } from './interfaces';
-//const io = require('socket.io');
-const msgpackParser = require('socket.io-msgpack-parser');
 
 /* 설정 세팅 =================================================================================================*/
 dotenv.config();
