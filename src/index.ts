@@ -105,15 +105,6 @@ socketIo.on('connection', (socket: any) => {
 			uniqueId: socket.id
 		}) as IUserModel;
 
-		const msgDisConn: IMessageModel = {
-			isRead: false,
-			msgFromUniqueId: '',
-			msgToUniqueId: '',
-			message: disconUserModel.nickName + '(이)가 퇴장 하였습니다.',
-			isSelf: false,
-			user: disconUserModel
-		};
-
 		// 접속종료정보를 모든 클라이언트 소켓들에게 emit
 		socket.broadcast.emit('client.user.out', JSON.stringify(disconUserModel));
 

@@ -12,7 +12,6 @@ interface IMessageModel {
 	isRead: boolean;
 	isSelf: boolean;
 	message: string;
-	msgFromUniqueId: string;
 	msgToUniqueId: string;
 	user: IUserModel;
 }
