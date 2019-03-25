@@ -2,7 +2,6 @@ import dotenv from 'dotenv';
 import koa from 'koa';
 import koaRouter from 'koa-router';
 import http from 'http';
-import https from 'https';
 import bodyParser from 'koa-bodyparser';
 import cors from 'koa2-cors';
 import net from 'net';
