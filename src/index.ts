@@ -115,7 +115,6 @@ socketIo.on('connection', (socket: any) => {
 
 		// 접속종료정보를 모든 클라이언트 소켓들에게 emit
 		socket.broadcast.emit('client.user.out', JSON.stringify(disconUserModel));
-		//socket.broadcast.emit('client.msg.receive', JSON.stringify(msgDisConn));
 
 		// 사용자 pool 에서 해당 사용자객체 제거
 		_.remove(
