@@ -81,7 +81,8 @@ socketIo.on('connection', (socket: any) => {
 		isRead: true,
 		nickName: socket.handshake.query.nickName,
 		nickId: socket.handshake.query.nickId,
-		uniqueId: socket.id
+		uniqueId: socket.id,
+		unreadCount: 0
 	};
 
 	// 사용자 POOL 에 PUSH
