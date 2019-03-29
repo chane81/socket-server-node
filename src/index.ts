@@ -29,10 +29,9 @@ const socketIo = io(server, {
 });
 
 // socket.io cors 옵션
-socketIo.origins((origin, callback) => {
-	console.log('server:', server);
-	console.log('origin:', origin);
-});
+// socketIo.origins((origin, callback) => {
+// 	console.log('origin:', origin);
+// });
 
 // 포트
 const socketIoPort: number =
