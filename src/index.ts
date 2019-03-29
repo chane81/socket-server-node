@@ -25,11 +25,12 @@ const socketIo = io(server, {
 	pingInterval: 10000, // ping 인터벌
 	pingTimeout: 10000, // ping 타임아웃
 	transports: [ 'websocket', 'polling' ],
-	//origins: '*:*',
 	parser: msgpackParser
 });
 
+// socket.io cors 옵션
 socketIo.origins((origin, callback) => {
+	console.log('server:', server);
 	console.log('origin:', origin);
 });
 
@@ -56,14 +57,7 @@ interface clientType {
 app.use(bodyParser());
 
 // CORS 관련 옵션 설정
-app.use(
-	cors({
-		origin: (ctx) => {
-			console.log('cors:', ctx.url);
-			return '*';
-		}
-	})
-);
+// app.use(cors());
 
 // 접속 클라이언틑 정보
 const clientPool: clientType[] = [];
