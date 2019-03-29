@@ -25,8 +25,12 @@ const socketIo = io(server, {
 	pingInterval: 10000, // ping 인터벌
 	pingTimeout: 10000, // ping 타임아웃
 	transports: [ 'websocket', 'polling' ],
-	origins: '*:*',
+	//origins: '*:*',
 	parser: msgpackParser
+});
+
+socketIo.origins((origin, callback) => {
+	console.log('origin:', origin);
 });
 
 // 포트
