@@ -52,7 +52,14 @@ interface clientType {
 app.use(bodyParser());
 
 // CORS 관련 옵션 설정
-app.use(cors());
+app.use(
+	cors({
+		origin: (ctx) => {
+			console.log('cors:', ctx.url);
+			return '*';
+		}
+	})
+);
 
 // 접속 클라이언틑 정보
 const clientPool: clientType[] = [];
