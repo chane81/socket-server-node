@@ -9,8 +9,9 @@ import _ from 'lodash';
 import uuidv1 from 'uuid/v1';
 import io from 'socket.io';
 import msgpackParser from 'socket.io-msgpack-parser';
-import { IMessageModel, IUserModel } from './interfaces';
+import { IMessageModel, IUserModel } from './models/interfaces';
 import { json } from 'body-parser';
+import jwtHelper from './library/jwtHelper';
 
 /* 설정 세팅 =================================================================================================*/
 
@@ -25,13 +26,9 @@ const socketIo = io(server, {
 	pingInterval: 10000, // ping 인터벌
 	pingTimeout: 10000, // ping 타임아웃
 	transports: [ 'websocket', 'polling' ],
+	origins: '*:*',
 	parser: msgpackParser
 });
-
-// socket.io cors 옵션
-// socketIo.origins((origin, callback) => {
-// 	console.log('origin:', origin);
-// });
 
 // 포트
 const socketIoPort: number =
@@ -78,82 +75,109 @@ function connectClients() {
 
 /* SOCKET.IO 서버 =================================================================================================*/
 // 소켓통신 이벤트 핸들러
-// connection
-socketIo.on('connection', (socket: any) => {
-	// 접속한 유저정보(접속시에는 빨간 dot(메시지 읽었는지 여부)가 안뜨게 isRead: true 로 설정)
-	const userModel: IUserModel = {
-		isRead: true,
-		nickName: socket.handshake.query.nickName,
-		nickId: socket.handshake.query.nickId,
-		uniqueId: socket.id,
-		unreadCount: 0
-	};
 
-	// 사용자 POOL 에 PUSH
-	userPoolModel.push(userModel);
+// 접속한 유저정보(접속시에는 빨간 dot(메시지 읽었는지 여부)가 안뜨게 isRead: true 로 설정)
+let userModel: IUserModel;
 
-	// 클라이언트가 접속했을 때 나머지 사용자에게 접속했다고 메시지 보내기
-	console.log('접속정보 SEND:', JSON.stringify(userModel));
-	socket.broadcast.emit('client.user.in', JSON.stringify(userModel));
+socketIo
+	// 토큰 검증
+	.use((socket, next) => {
+		const query = socket.handshake.query;
 
-	// 클라이언트에게 현재 접속자 정보를 보냄
-	socket.emit('client.current.users', JSON.stringify(userPoolModel));
+		if (query && query.token) {
+			// 토큰 복호화 가져오기
+			const result = jwtHelper(query.token);
 
-	// 접속한 클라이언트들 보여주기
-	connectClients();
+			// 인증된 토큰이면 사용자정보 넣어줌
+			if (result.success) {
+				const { nickName, nickId } = result.info.data;
+				userModel = {
+					isRead: true,
+					nickName: nickName,
+					nickId: nickId,
+					uniqueId: socket.id,
+					unreadCount: 0
+				};
 
-	// SERVER RECEIVE 이벤트 핸들러(클라이언트 -> 서버)
-	// 접속종료
-	socket.on('disconnect', (context: any) => {
-		const disconUserModel: IUserModel = _.find(userPoolModel, {
-			uniqueId: socket.id
-		}) as IUserModel;
+				return next();
+			}
 
-		// 접속종료정보를 모든 클라이언트 소켓들에게 emit
-		socket.broadcast.emit('client.user.out', JSON.stringify(disconUserModel));
+			console.log('미인증 토큰!');
 
-		// 사용자 pool 에서 해당 사용자객체 제거
-		_.remove(
-			userPoolModel,
-			(data: IUserModel) => data.uniqueId === disconUserModel.uniqueId
-		);
-
-		// log
-		console.log('client disconnected!', JSON.stringify(disconUserModel));
-	});
-
-	// 메시지 SEND
-	socket.on('client.msg.send', (context: string) => {
-		console.log('client.msg.send:', context);
-
-		const message: IMessageModel = JSON.parse(context);
-		const messageEmit: IMessageModel = {
-			...message,
-			isSelf: false
-		};
-
-		if (message.msgToUniqueId === '') {
-			socket.broadcast.emit('client.msg.receive', JSON.stringify(messageEmit));
-		} else {
-			socketIo
-				.to(message.msgToUniqueId)
-				.emit('client.msg.receive', JSON.stringify(messageEmit));
+			// 미인증된 토큰이면 클라이언트로 error 보냄
+			return next(new Error('AUTH_ERROR'));
 		}
+	})
+	// connection
+	.on('connection', (socket: any, resultVal) => {
+		// 사용자 POOL 에 PUSH
+		userPoolModel.push({ ...userModel });
 
-		//console.log('sockets:', socketIo.sockets);
+		// 클라이언트가 접속했을 때 나머지 사용자에게 접속했다고 메시지 보내기
+		console.log('접속정보 SEND:', JSON.stringify(userModel));
+		socket.broadcast.emit('client.user.in', JSON.stringify(userModel));
 
-		// .NET 클라이언트에게로 메시지 보내기
-		// clientPool.filter((data) => data.socketGubun === 'net').map((data) => {
-		// 	data.clientSocket.write(
-		// 		JSON.stringify({
-		// 			action: 'client.msg.receive',
-		// 			data: context
-		// 		}),
-		// 		(err: any) => {}
-		// 	);
-		// });
+		// 클라이언트에게 현재 접속자 정보를 보냄
+		socket.emit('client.current.users', JSON.stringify(userPoolModel));
+
+		// 접속한 클라이언트들 보여주기
+		connectClients();
+
+		// SERVER RECEIVE 이벤트 핸들러(클라이언트 -> 서버)
+		// 접속종료
+		socket.on('disconnect', (context: any) => {
+			const disconUserModel: IUserModel = _.find(userPoolModel, {
+				uniqueId: socket.id
+			}) as IUserModel;
+
+			// 접속종료정보를 모든 클라이언트 소켓들에게 emit
+			socket.broadcast.emit('client.user.out', JSON.stringify(disconUserModel));
+
+			// 사용자 pool 에서 해당 사용자객체 제거
+			_.remove(
+				userPoolModel,
+				(data: IUserModel) => data.uniqueId === disconUserModel.uniqueId
+			);
+
+			// log
+			console.log('client disconnected!', JSON.stringify(disconUserModel));
+		});
+
+		// 메시지 SEND
+		socket.on('client.msg.send', (context: string) => {
+			console.log('client.msg.send:', context);
+
+			const message: IMessageModel = JSON.parse(context);
+			const messageEmit: IMessageModel = {
+				...message,
+				isSelf: false
+			};
+
+			if (message.msgToUniqueId === '') {
+				socket.broadcast.emit(
+					'client.msg.receive',
+					JSON.stringify(messageEmit)
+				);
+			} else {
+				socketIo
+					.to(message.msgToUniqueId)
+					.emit('client.msg.receive', JSON.stringify(messageEmit));
+			}
+
+			//console.log('sockets:', socketIo.sockets);
+
+			// .NET 클라이언트에게로 메시지 보내기
+			// clientPool.filter((data) => data.socketGubun === 'net').map((data) => {
+			// 	data.clientSocket.write(
+			// 		JSON.stringify({
+			// 			action: 'client.msg.receive',
+			// 			data: context
+			// 		}),
+			// 		(err: any) => {}
+			// 	);
+			// });
+		});
 	});
-});
 
 router.get('*', (ctx, next) => {
 	return (ctx.response.body = 'hello!');
