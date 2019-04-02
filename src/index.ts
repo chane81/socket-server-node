@@ -186,10 +186,13 @@ router.get('*', (ctx, next) => {
 app.use(router.routes());
 
 // socket.io 서버 listen
-server.listen(socketIoPort, (err: any) => {
-	if (err) throw err;
-	console.log(`> SOCKET.IO Server Listening! port:${socketIoPort}`);
-});
+server
+	.listen(socketIoPort, () => {
+		console.log(`> SOCKET.IO Server Listening! port:${socketIoPort}`);
+	})
+	.on('error', (err) => {
+		throw err;
+	});
 /* SOCKET.IO 서버 =================================================================================================*/
 
 /* NET 서버 =======================================================================================================*/
