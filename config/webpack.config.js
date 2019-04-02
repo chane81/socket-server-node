@@ -13,26 +13,19 @@ module.exports = {
       }
     ]
   },
-  // externals: ['ws'],
-  devtool: 'source-map',
+  //devtool: 'source-map',
   target: 'node',
   externals: [nodeExternals()],
-  // externals: {
-  //   uws: "uws",
-  //   ws: "ws",
-  // },
   resolve: {
     extensions: [ '.tsx', '.ts', '.js' ],
-    modules: [
-      "./node_modules"
-    ]
+    modules: [path.resolve(__dirname, '../node_modules')]
   },
   output: {
     filename: 'server.js',
     path: path.resolve(__dirname, '../dist')
   },
   plugins: [
-		new Webpack.IgnorePlugin( /uws/ )
+    new Webpack.IgnorePlugin( /uws/ )
   ],
   resolveLoader: {
     "modules": [
