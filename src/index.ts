@@ -10,7 +10,6 @@ import uuidv1 from 'uuid/v1';
 import io from 'socket.io';
 import msgpackParser from 'socket.io-msgpack-parser';
 import { IMessageModel, IUserModel } from './models/interfaces';
-import { json } from 'body-parser';
 import jwtHelper from './library/jwtHelper';
 
 /* 설정 세팅 =================================================================================================*/
