@@ -22,7 +22,7 @@ function getClientConfig() {
     },
     // 실서버환경 변수
     production: {      
-      //JWT_PRIVATE_KEY: 'black2284'
+      JWT_PRIVATE_KEY: 'black2284'
     }
 	};
 
@@ -35,7 +35,7 @@ function getClientConfig() {
   
   // console.log('target:', process.env.npm_lifecycle_event);
   // console.log('stringified:', stringified);
-  
+
   return { raw, stringified };
 }
 
