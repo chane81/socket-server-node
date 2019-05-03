@@ -32,11 +32,15 @@ function getClientConfig() {
   const raw = envVal[process.env.NODE_ENV];
 
   // env 에 사용자 config 변수값 삽입
+  // const stringified = {
+  //   'process.env': {
+  //     ...getParse(process.env),
+  //     ...getParse(raw)
+  //   }
+  // };
+
   const stringified = {
-    'process.env': {
-      ...getParse(process.env),
-      ...getParse(raw)
-    }
+    'process.env': `Object.assign(${JSON.stringify(raw)}, process.env)`
   };
 
   console.log('raw:', stringified);
