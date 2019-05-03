@@ -22,6 +22,7 @@ function getClientConfig() {
     },
     // 실서버환경 변수
     production: {
+      SOCKET_IO_PORT: process.env.port,
       JWT_PRIVATE_KEY: 'black2284'
     }
 	};
