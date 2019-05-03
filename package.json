@@ -20,21 +20,16 @@
 		"socket.io-msgpack-parser": "^2.2.0",
 		"source-map": "^0.7.3",
 		"source-map-support": "^0.5.10",
-		"ts-loader": "^5.3.3",
-		"ts-node": "^8.0.2",
-		"typescript": "^3.3.3333",
-		"uuid": "^3.3.2",
-		"webpack": "^4.29.5",
-		"webpack-cli": "^3.2.3",
-		"webpack-node-externals": "^1.7.2"
+		"uuid": "^3.3.2"
 	},
 	"scripts": {
 		"build-ts": "tsc",
-		"start": "cross-env NODE_ENV=production node ./dist/server.js",
 		"watch-node": "nodemon dist/server.js",
 		"watch-ts": "tsc -w",
-		"dev": "nodemon --watch src --delay 1 --exec ts-node ./src/index.ts",
-		"build": "webpack --mode development --config ./config/webpack.config.js"
+		"dev": "nodemon --watch src --delay 1 --exec ts-node ./src/server.ts",
+		"build": "webpack --mode production --config ./config/webpack.config.js",
+		"start": "yarn build && node ./dist/server.js",
+		"watch": "webpack-dev-server --config ./config/webpack.dev.js"
 	},
 	"engines": {
 		"node": "10.x.x"
@@ -50,8 +45,26 @@
 		"@types/koa": "^2.0.48",
 		"@types/koa-bodyparser": "^4.2.2",
 		"@types/koa-router": "^7.0.40",
+		"@types/koa-webpack": "^5.0.1",
 		"@types/koa2-cors": "^2.0.1",
 		"@types/lodash": "^4.14.122",
-		"@types/uuid": "^3.4.4"
+		"@types/uuid": "^3.4.4",
+		"@types/webpack": "^4.4.27",
+		"ts-loader": "^5.3.3",
+		"ts-node": "^8.0.3",
+		"typescript": "^3.4.3",
+		"webpack": "^4.29.6",
+		"webpack-cli": "^3.3.0",
+		"webpack-dev-server": "^3.3.1",
+		"webpack-merge": "^4.2.1",
+		"webpack-node-externals": "^1.7.2",
+		"webpack-watch-server": "^1.2.1"
+	},
+	"babel": {
+		"presets": [
+			"@babel/preset-env",
+			"@babel/preset-stage-0",
+			"@babel/typescript"
+		]
 	}
 }

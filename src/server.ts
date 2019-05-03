@@ -38,6 +38,8 @@ const netPort: number = Number(process.env.NET_PORT) || 5001;
 // 개발모드인지 여부 true/false
 const dev: boolean = process.env.NODE_ENV !== 'production';
 
+console.log('is dev:', process.env.NODE_ENV);
+
 // 클라이언트 타입
 interface clientType {
 	clientSocket: any;
