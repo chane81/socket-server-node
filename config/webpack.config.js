@@ -26,9 +26,7 @@ module.exports = {
   },
   plugins: [
     new webpack.IgnorePlugin( /uws/ ),
-    // new webpack.DefinePlugin({
-    //   ...env.stringified
-    // }),
+    new webpack.DefinePlugin(env.stringified),
   ],
   resolveLoader: {
     "modules": [
