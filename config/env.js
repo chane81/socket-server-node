@@ -3,6 +3,9 @@
  */
 
 function getClientConfig() {
+  const target = process.env.npm_lifecycle_event;
+  process.env.NODE_ENV = target === 'build' ? 'production' : 'development';
+
 	const envVal = {
     // 개발환경 변수
 		development: {
@@ -10,29 +13,25 @@ function getClientConfig() {
       NET_PORT: '5001',
       JWT_PRIVATE_KEY: 'cloud99'
     },
-    // heroku 에서는 자체적으로 env 설정 제공
     // 실서버환경 변수
-    production: {}
-		// production: {
-		// 	SOCKET_IO_PORT: '5000',
-    //   NET_PORT: '5001',
-    //   JWT_PRIVATE_KEY: 'cloud99'
-		// }
+    production: {
+      JWT_PRIVATE_KEY: 'black2284'
+    }
 	};
 
   // 실행환경
 	// 'development' or 'production'
-	const nodeEnv = process.env.NODE_ENV || 'development';
-  const raw = envVal[nodeEnv];
+  const raw = envVal[process.env.NODE_ENV];
 
   // env 에 사용자 config 변수값 삽입
   const stringified = {
     'process.env': Object.keys(raw).reduce((env, key) => {
-      env[key] = JSON.stringify(raw[key]);
-      return env;
+        env[key] = JSON.stringify(raw[key]);
+        return env;
     }, {}),
   };
 
+  console.log('raw:', stringified);
   return { raw, stringified };
 }
 

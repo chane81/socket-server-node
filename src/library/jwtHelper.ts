@@ -16,6 +16,9 @@ const privateKey: string = process.env.JWT_PRIVATE_KEY;
 // 토근 검증
 const getTokenVerify = (token: string) => {
 	try {
+		console.log(`env:${process.env.NODE_ENV}`);
+		console.log(`privateKey:${privateKey}`);
+
 		return {
 			info: jwt.verify(token, privateKey),
 			success: true
