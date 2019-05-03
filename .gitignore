@@ -9,7 +9,7 @@ out/
 
 # production
 /build
-# /dist
+/dist
 
 
 
