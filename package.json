@@ -34,7 +34,7 @@
 		"dev": "nodemon --watch src --delay 1 --exec ts-node ./src/server.ts",
 		"build": "webpack --mode production --config ./config/webpack.config.js",
 		"start": "yarn build && node ./dist/server.js",
-		"heroku-postbuild": "yarn"
+		"heroku-postbuild": "npm install --only=dev --no-shrinkwrap"
 	},
 	"engines": {
 		"node": "10.x.x"
