@@ -12,6 +12,7 @@ function getClientConfig() {
     },
     // heroku 에서는 자체적으로 env 설정 제공
     // 실서버환경 변수
+    production: {}
 		// production: {
 		// 	SOCKET_IO_PORT: '5000',
     //   NET_PORT: '5001',
