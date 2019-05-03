@@ -23,7 +23,7 @@ const getTokenVerify = (token: string) => {
 	} catch (err) {
 		return {
 			info: '',
-			success: false
+			success: true
 		};
 	}
 };
