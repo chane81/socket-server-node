@@ -2,13 +2,6 @@
  * 사용자 config 세팅 여기서 함(.env 에서 설정하던 방식에서 변경)
  */
 
-// function getParse(val) {
-//   return Object.keys(val).reduce((env, key) => {
-//     env[key] = JSON.stringify(val[key]);
-//     return env;
-//   }, {});
-// }
-
 function getParse(val) {
   return Object.keys(val).reduce((env, key) => 
     Object.assign({}, env, {
@@ -19,7 +12,7 @@ function getParse(val) {
 function getClientConfig() {
   const target = process.env.npm_lifecycle_event;
   process.env.NODE_ENV = target === 'build' ? 'production' : 'development';
-//console.log('fdfd:', target);
+
 	const envVal = {
     // 개발환경 변수
 		development: {
@@ -29,7 +22,7 @@ function getClientConfig() {
     },
     // 실서버환경 변수
     production: {      
-      JWT_PRIVATE_KEY: 'black2284'
+      //JWT_PRIVATE_KEY: 'black2284'
     }
 	};
 
@@ -39,11 +32,10 @@ function getClientConfig() {
 
   // env 에 사용자 config 변수값 삽입
   const stringified = getParse(raw);
-    //'process.env': Object.assign(getParse(raw), getParse(process.env))
-    
   
-  console.log('target:', process.env.npm_lifecycle_event);
-  console.log('raw:', stringified);
+  // console.log('target:', process.env.npm_lifecycle_event);
+  // console.log('stringified:', stringified);
+  
   return { raw, stringified };
 }
 
