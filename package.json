@@ -28,8 +28,7 @@
 		"watch-ts": "tsc -w",
 		"dev": "nodemon --watch src --delay 1 --exec ts-node ./src/server.ts",
 		"build": "webpack --mode production --config ./config/webpack.config.js",
-		"start": "yarn build && node ./dist/server.js",
-		"watch": "webpack-dev-server --config ./config/webpack.dev.js"
+		"start": "yarn build && node ./dist/server.js"
 	},
 	"engines": {
 		"node": "10.x.x"
