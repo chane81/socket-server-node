@@ -18,7 +18,7 @@ function getParse(val) {
 
 function getClientConfig() {
   const target = process.env.npm_lifecycle_event;
-  process.env.NODE_ENV = target === 'start' ? 'production' : 'development';
+  process.env.NODE_ENV = target === 'build' ? 'production' : 'development';
 //console.log('fdfd:', target);
 	const envVal = {
     // 개발환경 변수
