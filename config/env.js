@@ -2,6 +2,13 @@
  * 사용자 config 세팅 여기서 함(.env 에서 설정하던 방식에서 변경)
  */
 
+function getParse(val) {
+  return Object.keys(val).reduce((env, key) => {
+    env[key] = JSON.stringify(val[key]);
+    return env;
+  }, {});
+}
+
 function getClientConfig() {
   const target = process.env.npm_lifecycle_event;
   process.env.NODE_ENV = target === 'build' ? 'production' : 'development';
@@ -25,10 +32,10 @@ function getClientConfig() {
 
   // env 에 사용자 config 변수값 삽입
   const stringified = {
-    'process.env': Object.keys(raw).reduce((env, key) => {
-        env[key] = JSON.stringify(raw[key]);
-        return env;
-    }, {}),
+    'process.env': {
+      ...getParse(process.env),
+      ...getParse(raw)
+    }
   };
 
   console.log('raw:', stringified);
