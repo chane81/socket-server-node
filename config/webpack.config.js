@@ -1,7 +1,7 @@
 const path = require('path');
 const webpack = require( "webpack" );
 var nodeExternals = require('webpack-node-externals');
-//const env = require('./env')();
+const env = require('./env')();
 
 module.exports = {
   entry: './src/server.ts',
@@ -26,7 +26,10 @@ module.exports = {
   },
   plugins: [
     new webpack.IgnorePlugin( /uws/ ),
-    //new webpack.DefinePlugin(env.stringified),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+      ...env.stringified
+    }),
   ],
   resolveLoader: {
     "modules": [
