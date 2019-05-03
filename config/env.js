@@ -12,7 +12,7 @@
 function getParse(val) {
   return Object.keys(val).reduce((env, key) => 
     Object.assign({}, env, {
-      [`process.env.${key}`]: val[key]
+      [`process.env.${key}`]: JSON.stringify(val[key])
     }), {});
 }
 
