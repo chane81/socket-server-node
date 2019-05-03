@@ -14,7 +14,6 @@ module.exports = {
       }
     ]
   },
-  //devtool: 'source-map',
   target: 'node',
   externals: [nodeExternals()],
   resolve: {
@@ -33,7 +32,8 @@ module.exports = {
     "modules": [
       "./node_modules"
     ]
-  }
+  },
+  //devtool: 'source-map',
   // devServer: {
   //   hot: true,
   //   inline: true,

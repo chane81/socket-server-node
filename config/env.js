@@ -10,12 +10,13 @@ function getClientConfig() {
       NET_PORT: '5001',
       JWT_PRIVATE_KEY: 'cloud99'
     },
+    // heroku 에서는 자체적으로 env 설정 제공
     // 실서버환경 변수
-		production: {
-			SOCKET_IO_PORT: '5000',
-      NET_PORT: '5001',
-      JWT_PRIVATE_KEY: 'black2284'
-		}
+		// production: {
+		// 	SOCKET_IO_PORT: '5000',
+    //   NET_PORT: '5001',
+    //   JWT_PRIVATE_KEY: 'cloud99'
+		// }
 	};
 
   // 실행환경
