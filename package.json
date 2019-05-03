@@ -33,8 +33,7 @@
 		"dev:watch": "webpack --config ./config/webpack.dev.js && nodemon dist/server.js",
 		"dev": "nodemon --watch src --delay 1 --exec ts-node ./src/server.ts",
 		"build": "webpack --mode production --config ./config/webpack.config.js",
-		"start": "node ./dist/server.js",
-		"heroku-postbuild": "yarn build"
+		"start": "yarn build && node ./dist/server.js"
 	},
 	"engines": {
 		"node": "10.x.x"
