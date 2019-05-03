@@ -29,6 +29,8 @@ const socketIo = io(server, {
 	parser: msgpackParser
 });
 
+console.log('socket io port:', process.env.SOCKET_IO_PORT);
+
 // 포트
 const socketIoPort: number =
 	Number(process.env.PORT) || Number(process.env.SOCKET_IO_PORT) || 5000;
