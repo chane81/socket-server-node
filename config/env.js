@@ -42,7 +42,7 @@ function getClientConfig() {
     //'process.env': Object.assign(getParse(raw), getParse(process.env))
     
   
-
+  console.log('target:', process.env.npm_lifecycle_event);
   console.log('raw:', stringified);
   return { raw, stringified };
 }
