@@ -3,6 +3,21 @@
 	"version": "2.0.0",
 	"main": "./dist/main.js",
 	"license": "MIT",
+	"scripts": {
+		"####### development mode": "",
+		"build-ts": "tsc",
+		"watch-ts": "tsc -w",
+		"dev:watch": "webpack --config ./config/webpack.dev.js && nodemon dist/server.js",
+		"dev": "nodemon --watch src --delay 1 --exec ts-node ./src/server.ts",
+
+		"####### product mode": "",
+		"build": "webpack --mode production --config ./config/webpack.config.js",
+		"start": "cross-env NODE_ENV=production node ./dist/server.js",
+		"heroku-postbuild": "yarn build"
+	},
+	"engines": {
+		"node": "10.x.x"
+	},
 	"dependencies": {
 		"cross-env": "^5.2.0",
 		"dotenv": "^6.2.0",
@@ -14,7 +29,6 @@
 		"koa2-cors": "^2.0.6",
 		"lodash": "^4.17.11",
 		"net": "^1.0.2",
-		"nodemon": "^1.18.10",
 		"path": "^0.12.7",
 		"socket.io": "^2.2.0",
 		"socket.io-msgpack-parser": "^2.2.0",
@@ -26,18 +40,6 @@
 		"webpack-cli": "^3.3.1",
 		"webpack-merge": "^4.2.1",
 		"webpack-node-externals": "^1.7.2"
-	},
-	"scripts": {
-		"build-ts": "tsc",
-		"watch-ts": "tsc -w",
-		"dev:watch": "webpack --config ./config/webpack.dev.js && nodemon dist/server.js",
-		"dev": "nodemon --watch src --delay 1 --exec ts-node ./src/server.ts",
-		"build": "webpack --mode production --config ./config/webpack.config.js",
-		"start": "cross-env NODE_ENV=production node ./dist/server.js",
-		"heroku-postbuild": "yarn build"
-	},
-	"engines": {
-		"node": "10.x.x"
 	},
 	"devDependencies": {
 		"@babel/cli": "^7.2.3",
@@ -55,6 +57,7 @@
 		"@types/lodash": "^4.14.122",
 		"@types/uuid": "^3.4.4",
 		"@types/webpack": "^4.4.27",
+		"nodemon": "^1.19.1",
 		"ts-node": "^8.0.3",
 		"typescript": "^3.4.3",
 		"webpack-dev-server": "^3.3.1",
