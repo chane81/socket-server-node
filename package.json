@@ -7,8 +7,7 @@
 		"####### development mode": "",
 		"build-ts": "tsc",
 		"watch-ts": "tsc -w",
-		"dev:watch": "webpack --config ./config/webpack.dev.js && nodemon dist/server.js",
-		"dev": "nodemon --watch src --delay 1 --exec ts-node ./src/server.ts",
+		"dev": "webpack --config ./config/webpack.dev.js && nodemon dist/server.js",
 
 		"####### product mode": "",
 		"build": "webpack --mode production --config ./config/webpack.config.js",
