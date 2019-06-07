@@ -5,6 +5,6 @@ module.exports = merge(config, {
   mode: 'development',
   devtool: 'cheap-eval-sourcemap',
   devServer: {
-    port: 5000,
+    port: 3030,
   },
 });
