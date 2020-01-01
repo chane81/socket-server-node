@@ -57,6 +57,7 @@
     "@types/uuid": "^3.4.4",
     "@types/webpack": "^4.4.27",
     "nodemon": "^1.19.1",
+    "nodemon-webpack-plugin": "^4.2.2",
     "ts-node": "^8.0.3",
     "typescript": "^3.4.3",
     "webpack-dev-server": "^3.3.1",
