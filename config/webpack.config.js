@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require( "webpack" );
 var nodeExternals = require('webpack-node-externals');
 const env = require('./env')();
+const rootPath = path.resolve(__dirname, '../');
 
 module.exports = {
   entry: './src/server.ts',
@@ -18,11 +19,16 @@ module.exports = {
   externals: [nodeExternals()],
   resolve: {
     extensions: [ '.tsx', '.ts', '.js' ],
-    modules: [path.resolve(__dirname, '../node_modules')]
+    modules: [path.resolve(rootPath, 'node_modules')],
+    alias: {
+      '~/src': path.resolve(rootPath, 'src'),
+      '~/models': path.resolve(rootPath, 'src/models'),
+      '~/library': path.resolve(rootPath, 'src/library')
+    }
   },
   output: {
     filename: 'server.js',
-    path: path.resolve(__dirname, '../dist')
+    path: path.resolve(rootPath, 'dist')
   },
   plugins: [
     new webpack.IgnorePlugin( /uws/ ),

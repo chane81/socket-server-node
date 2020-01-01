@@ -2,7 +2,6 @@ const merge = require('webpack-merge');
 const config = require('./webpack.config');
 const nodemonPlugin = require('nodemon-webpack-plugin');
 const path = require('path');
-
 const rootPath = path.resolve(__dirname, '../');
 
 module.exports = merge(config, {
